@@ -22,10 +22,10 @@ def load_appointments() -> list[dict]:
 
 def init(fastapi_app: FastAPI) -> None:
     columns = [
-        {"name": "time", "label": "TIME", "field": "time", "align": "left"},
+        {"name": "time", "label": "Zeit", "field": "time", "align": "left"},
         {
             "name": "appointment",
-            "label": "APPOINTMENT",
+            "label": "Aufgabe / Termin",
             "field": "appointment",
             "align": "left",
         },
@@ -36,15 +36,24 @@ def init(fastapi_app: FastAPI) -> None:
     async def show_appointments():
         table = ui.table(columns=columns, rows=rows, row_key="time").classes("w-full")
         table.add_slot(
+            "header",
+            r"""
+            <q-tr :props="props" class="bg-blue-800">
+                <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                    <span class="text-base font-bold text-white">{{ col.label }}</span>
+                </q-th>
+            </q-tr>
+        """,
+        )
+        table.add_slot(
             "body",
             r"""
                  <q-tr :props="props">
-                     <q-td key="time" :props="props" class="font-bold">
-                         {{ props.row.time }}
-    
+                     <q-td key="time" :props="props" class="font-bold w-[100px] text-blue-800">
+                         <span style="white-space: pre;" class="text-base">{{ props.row.time }}<span>
                      </q-td>
-                     <q-td key="appointment" :props="props" class="font-bold">
-                         <span style="white-space: pre;">{{ props.row.appointment }}</span>
+                     <q-td key="appointment" :props="props" class="font-bold flex-1">
+                         <span style="white-space: pre;" class="text-base">{{ props.row.appointment }}</span>
                      </q-td>
                  </q-tr>
              """,
@@ -89,20 +98,20 @@ def init(fastapi_app: FastAPI) -> None:
             "body",
             r"""
             <q-tr :props="props">
-                <q-td>
+                <q-td class="w-[40px]">
                     <q-btn size="sm" color="warning" round dense icon="delete"
                         @click="() => $parent.$emit('delete', props.row)"
                     />
                 </q-td>
-                <q-td key="time" :props="props">
-                    {{ props.row.time }}
+                <q-td key="time" :props="props" class="w-[120px]">
+                    <span style="white-space: pre;">{{ props.row.time }}</span>
                     <q-popup-edit v-model="props.row.time" v-slot="scope" buttons
                         @update:model-value="() => $parent.$emit('rename', props.row)"
                     >
                         <q-input type="textarea" v-model="scope.value" autofocus counter  @keyup.enter.stop />
                     </q-popup-edit>
                 </q-td>
-                <q-td key="appointment" :props="props">
+                <q-td key="appointment" :props="props" class="flex-1">
                     <span style="white-space: pre;">{{ props.row.appointment }}</span>
                     <q-popup-edit v-model="props.row.appointment" v-slot="scope" buttons
                         @update:model-value="() => $parent.$emit('rename', props.row)"
